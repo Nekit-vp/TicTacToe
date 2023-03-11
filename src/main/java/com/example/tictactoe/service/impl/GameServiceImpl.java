@@ -1,6 +1,8 @@
 package com.example.tictactoe.service.impl;
 
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.example.tictactoe.constant.ConstantMessage.GAME_BY_ID_NOT_FOUND_MESSAGE;
+import static com.example.tictactoe.constant.ConstantMessage.GAME_EMPTY_MESSAGE;
 import static com.example.tictactoe.constant.ConstantMessage.GAME_FINISHED_MESSAGE;
 import static com.example.tictactoe.constant.ConstantMessage.POSITION_ALREADY_TAKEN_MESSAGE;
 import static com.example.tictactoe.dto.enums.AuthorStep.COMPUTER;
@@ -95,6 +98,37 @@ public class GameServiceImpl implements GameService {
             return gameMapper.toResponse(gameRepository.save(gameEntity));
         }
         return gameMapper.toResponse(gameEntity);
+    }
+
+    @Override
+    @Transactional
+    public GameResponse deleteStep(Long gameId) {
+        GameEntity gameEntity = getGameEntityById(gameId);
+        checkGameInProcess(gameEntity);
+        checkEmptyGame(gameEntity);
+
+        StepEntity lastStep = findLastStep(gameEntity.getSteps());
+        gameEntity.getSteps().remove(lastStep);
+        stepService.deleteStep(lastStep.getId());
+
+        if (!gameEntity.getSteps().isEmpty()) {
+            StepEntity lastStep2 = findLastStep(gameEntity.getSteps());
+            gameEntity.getSteps().remove(lastStep2);
+            stepService.deleteStep(lastStep2.getId());
+        }
+        return gameMapper.toResponse(gameEntity);
+    }
+
+    private StepEntity findLastStep(List<StepEntity> steps) {
+        return steps.stream()
+                .max(Comparator.comparing(StepEntity::getCreatedAt))
+                .orElseThrow(() -> new TicTacToeException("Step not found", HttpStatus.NOT_FOUND));
+    }
+
+    private void checkEmptyGame(GameEntity gameEntity) {
+        if (gameEntity.getSteps().isEmpty()) {
+            throw new TicTacToeException(GAME_EMPTY_MESSAGE, FORBIDDEN, gameEntity.getId());
+        }
     }
 
     private boolean gameIsDeadHeat(GameEntity gameEntity) {

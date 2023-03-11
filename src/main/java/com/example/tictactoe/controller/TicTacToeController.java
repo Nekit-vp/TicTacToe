@@ -28,4 +28,9 @@ public class TicTacToeController implements TicTacToeApi {
     public GameResponse createStep(Long gameId, StepRequest stepRequest) {
         return gameService.createNewStep(gameId, stepRequest);
     }
+
+    @Override
+    public GameResponse deleteStep(Long gameId) {
+        return gameService.deleteStep(gameId);
+    }
 }

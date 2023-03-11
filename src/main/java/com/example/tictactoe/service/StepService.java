@@ -6,4 +6,6 @@ import com.example.tictactoe.model.StepEntity;
 
 public interface StepService {
     StepEntity createNewStep(AuthorStep computer, Integer positionComputer, GameEntity gameEntity);
+
+    void deleteStep(Long stepId);
 }

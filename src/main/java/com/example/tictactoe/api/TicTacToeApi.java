@@ -11,10 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "TicTacToe Controller")
 public interface TicTacToeApi {
@@ -58,4 +55,17 @@ public interface TicTacToeApi {
                             @PathVariable Long gameId,
                             @Schema(required = true, description = "Ход пользователя")
                             @RequestBody @Valid StepRequest stepRequest);
+
+    @Operation(summary = "Удалить ход")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Ход удален",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = GameResponse.class))}
+            ),
+            @ApiResponse(responseCode = "404", description = "Партии с таким идентификатором не существует"),
+            @ApiResponse(responseCode = "403", description = "Удаление невозможно: партия закончена/в партии нет ходов")
+    })
+    @DeleteMapping(value = BASE_URL + "/{gameId}/step")
+    GameResponse deleteStep(@Schema(required = true, description = "Идентификатор партии")
+                            @PathVariable Long gameId);
 }

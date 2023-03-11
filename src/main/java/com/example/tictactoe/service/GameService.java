@@ -10,4 +10,6 @@ public interface GameService {
     GameResponse createNewGame(GameRequest gameRequest);
 
     GameResponse createNewStep(Long gameId, StepRequest stepRequest);
+
+    GameResponse deleteStep(Long gameId);
 }
