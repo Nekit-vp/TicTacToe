@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - include:
+      file: /db/20230309_init_db.yml
+  - include:
+      file: /db/20230310_add_first_game.yml

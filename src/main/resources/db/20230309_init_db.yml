@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 01_add_sql_file_init_data_base
+      author: lobanov_nikita
+      changes:
+        - sqlFile:
+            path: db/sql/20230309_init_db.sql

@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 01_add_game
+      author: lobanov_nikita
+      changes:
+        - sqlFile:
+            path: db/sql/20230310_add_first_game.sql
