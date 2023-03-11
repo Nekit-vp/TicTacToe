@@ -19,12 +19,12 @@ public class StepServiceImpl implements StepService {
 
     @Override
     @Transactional
-    public void createNewStep(AuthorStep authorStep, Integer position, GameEntity gameEntity) {
+    public StepEntity createNewStep(AuthorStep authorStep, Integer position, GameEntity gameEntity) {
         StepEntity stepEntity = StepEntity.builder()
                 .author(authorStep)
                 .game(gameEntity)
                 .position(position)
                 .build();
-        stepRepository.save(stepEntity);
+        return stepRepository.save(stepEntity);
     }
 }

@@ -1,9 +1,13 @@
 package com.example.tictactoe.service;
 
-import com.example.tictactoe.model.GameEntity;
+import com.example.tictactoe.dto.request.GameRequest;
+import com.example.tictactoe.dto.request.StepRequest;
+import com.example.tictactoe.dto.response.GameResponse;
 
 public interface GameService {
-    GameEntity getGameById(Long gameId);
+    GameResponse getGameResponseById(Long gameId);
 
-    GameEntity createNewGame();
+    GameResponse createNewGame(GameRequest gameRequest);
+
+    GameResponse createNewStep(Long gameId, StepRequest stepRequest);
 }

@@ -5,5 +5,5 @@ import com.example.tictactoe.model.GameEntity;
 import com.example.tictactoe.model.StepEntity;
 
 public interface StepService {
-    void createNewStep(AuthorStep computer, Integer positionComputer, GameEntity gameEntity);
+    StepEntity createNewStep(AuthorStep computer, Integer positionComputer, GameEntity gameEntity);
 }

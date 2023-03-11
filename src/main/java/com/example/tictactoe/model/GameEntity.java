@@ -1,14 +1,12 @@
 package com.example.tictactoe.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.*;
 
 import com.example.tictactoe.dto.enums.StatusGame;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -25,6 +23,7 @@ public class GameEntity extends AbstractEntity {
     @Enumerated(EnumType.STRING)
     private StatusGame status;
 
-    @OneToMany(mappedBy = "game", fetch = FetchType.EAGER)
-    private List<StepEntity> steps;
+    @OneToMany(mappedBy = "game")
+    @Builder.Default
+    private List<StepEntity> steps = new ArrayList<>();
 }
