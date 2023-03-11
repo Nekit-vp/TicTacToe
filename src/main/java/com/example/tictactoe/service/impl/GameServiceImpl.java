@@ -1,8 +1,11 @@
 package com.example.tictactoe.service.impl;
 
 import java.time.Instant;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.example.tictactoe.dto.enums.AuthorStep;
 import com.example.tictactoe.dto.enums.StatusGame;
 import com.example.tictactoe.dto.request.GameRequest;
 import com.example.tictactoe.dto.request.StepRequest;
@@ -15,6 +18,7 @@ import com.example.tictactoe.model.StepEntity;
 import com.example.tictactoe.repository.GameRepository;
 import com.example.tictactoe.service.GameService;
 import com.example.tictactoe.service.StepService;
+import com.example.tictactoe.utils.CheckWonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -22,9 +26,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.example.tictactoe.constant.ConstantMessage.GAME_BY_ID_NOT_FOUND_MESSAGE;
+import static com.example.tictactoe.constant.ConstantMessage.GAME_FINISHED_MESSAGE;
 import static com.example.tictactoe.constant.ConstantMessage.POSITION_ALREADY_TAKEN_MESSAGE;
 import static com.example.tictactoe.dto.enums.AuthorStep.COMPUTER;
 import static com.example.tictactoe.dto.enums.AuthorStep.USER;
+import static com.example.tictactoe.dto.enums.StatusGame.FINISHED_DEAD_HEAT;
+import static com.example.tictactoe.dto.enums.StatusGame.PROCESS;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @Service
@@ -60,16 +67,52 @@ public class GameServiceImpl implements GameService {
     @Transactional
     public GameResponse createNewStep(Long gameId, StepRequest stepRequest) {
         GameEntity gameEntity = getGameEntityById(gameId);
+        checkGameInProcess(gameEntity);
         checkPositionAlreadyExist(gameEntity, stepRequest.getPosition());
 
         StepEntity stepUser = stepService.createNewStep(USER, stepRequest.getPosition(), gameEntity);
         gameEntity.getSteps().add(stepUser);
+        if (checkGameFinishedWithWon(USER, gameEntity)) {
+            gameEntity.setStatus(StatusGame.FINISHED_USER_WON);
+            return gameMapper.toResponse(gameRepository.save(gameEntity));
+        }
+
+        if (gameIsDeadHeat(gameEntity)) {
+            gameEntity.setStatus(FINISHED_DEAD_HEAT);
+            return gameMapper.toResponse(gameRepository.save(gameEntity));
+        }
 
         Integer positionComputer = engine.getNextStep(gameMapper.toDto(gameEntity));
         StepEntity stepComputer = stepService.createNewStep(COMPUTER, positionComputer, gameEntity);
         gameEntity.getSteps().add(stepComputer);
+        if (checkGameFinishedWithWon(COMPUTER, gameEntity)) {
+            gameEntity.setStatus(StatusGame.FINISHED_COMPUTER_WON);
+            return gameMapper.toResponse(gameRepository.save(gameEntity));
+        }
 
+        if (gameIsDeadHeat(gameEntity)) {
+            gameEntity.setStatus(FINISHED_DEAD_HEAT);
+            return gameMapper.toResponse(gameRepository.save(gameEntity));
+        }
         return gameMapper.toResponse(gameEntity);
+    }
+
+    private boolean gameIsDeadHeat(GameEntity gameEntity) {
+        return gameEntity.getSteps().size() == 9;
+    }
+
+    private void checkGameInProcess(GameEntity gameEntity) {
+        if (!PROCESS.equals(gameEntity.getStatus())) {
+            throw new TicTacToeException(GAME_FINISHED_MESSAGE, FORBIDDEN, gameEntity.getId(), gameEntity.getStatus());
+        }
+    }
+
+    private boolean checkGameFinishedWithWon(AuthorStep author, GameEntity gameEntity) {
+        Set<Integer> positionByAuthor = gameEntity.getSteps().stream()
+                .filter(step -> author.equals(step.getAuthor()))
+                .map(StepEntity::getPosition)
+                .collect(Collectors.toSet());
+        return CheckWonUtil.checkWinningPosition(positionByAuthor);
     }
 
     private void checkPositionAlreadyExist(GameEntity gameEntity, Integer position) {
@@ -86,7 +129,7 @@ public class GameServiceImpl implements GameService {
 
     private GameEntity getNewGameEntity() {
         return GameEntity.builder()
-                .status(StatusGame.PROCESS)
+                .status(PROCESS)
                 .createdAt(Instant.now())
                 .build();
     }
