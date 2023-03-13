@@ -9,6 +9,7 @@ import com.example.tictactoe.exeption.TicTacToeException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -52,6 +53,19 @@ public class ControllerExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ResponseErrorMessage.builder()
                         .errors(collectErrors(ex))
+                        .build());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ExceptionMessage> handleException(HttpMessageNotReadableException ex,
+                                                            WebRequest request) {
+        log.info(EXCEPTION_MESSAGE, ex);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ExceptionMessage.builder()
+                        .endpoint(((ServletWebRequest) request).getRequest().getRequestURI())
+                        .message(ex.getMessage())
+                        .exceptionName(ex.getClass().getSimpleName())
                         .build());
     }
 

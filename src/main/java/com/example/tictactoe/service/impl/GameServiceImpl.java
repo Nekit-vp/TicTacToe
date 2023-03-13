@@ -104,17 +104,20 @@ public class GameServiceImpl implements GameService {
     @Transactional
     public GameResponse deleteStep(Long gameId) {
         GameEntity gameEntity = getGameEntityById(gameId);
-        checkGameInProcess(gameEntity);
         checkEmptyGame(gameEntity);
 
         StepEntity lastStep = findLastStep(gameEntity.getSteps());
         gameEntity.getSteps().remove(lastStep);
         stepService.deleteStep(lastStep.getId());
 
-        if (!gameEntity.getSteps().isEmpty()) {
+        if (!gameEntity.getSteps().isEmpty() && COMPUTER.equals(lastStep.getAuthor())) {
             StepEntity lastStep2 = findLastStep(gameEntity.getSteps());
             gameEntity.getSteps().remove(lastStep2);
             stepService.deleteStep(lastStep2.getId());
+        }
+        if (!PROCESS.equals(gameEntity.getStatus())) {
+            gameEntity.setStatus(PROCESS);
+            gameRepository.save(gameEntity);
         }
         return gameMapper.toResponse(gameEntity);
     }
