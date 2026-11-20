@@ -1,3 +1,27 @@
+# Tic-Tac-Toe REST API
+
+A Spring Boot API for creating a game, making moves, looking up its current state and undoing a move. H2 stores games in memory for the lifetime of the application.
+
+## Run locally
+
+Use JDK 11 with the included Gradle wrapper.
+
+```bash
+bash ./gradlew bootRun
+```
+
+Open [Swagger UI](http://localhost:8080/swagger-ui/index.html) for request bodies and response examples.
+
+| Request | Operation |
+| --- | --- |
+| `POST /game` | Create a game |
+| `GET /game/{gameId}` | Inspect a game |
+| `POST /game/{gameId}/step` | Make a move |
+| `DELETE /game/{gameId}/step` | Undo a move |
+
+<details>
+<summary>Original project notes</summary>
+
 # Крестики-нолики
 
 ## Требования
@@ -29,3 +53,4 @@
 
 Интерактивная доккументация по API доступна по адресу http://localhost:8080/swagger-ui/index.html
 
+</details>
